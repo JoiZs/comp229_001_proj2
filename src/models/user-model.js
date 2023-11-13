@@ -1,5 +1,6 @@
 const { Schema, default: mongoose } = require("mongoose");
 
+// 5 Datatypes
 const User = new Schema({
   name: { type: String, unique: true, required: true },
   email: { type: String, unique: true, required: true },

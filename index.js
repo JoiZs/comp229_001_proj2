@@ -20,10 +20,16 @@ app.get("/", (req, res) => {
 });
 
 (async () => {
+  // Connect to mongodb
   await mongoose.connect(process.env.MONGO_URI);
 })();
 
+// Two Main APIs
+
+// Request Data from database
 app.use("/api", api_router);
+
+// Make Authentication Requests
 app.use("/auth", auth_router);
 
 app.listen(PORT, () => {
