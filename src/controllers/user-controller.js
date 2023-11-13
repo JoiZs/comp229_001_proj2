@@ -2,6 +2,15 @@ const userModel = require("../models/user-model");
 const argon2 = require("argon2");
 const isStrongPw = require("validator/lib/isStrongPassword");
 const isEmail = require("validator/lib/isEmail");
+const jwt = require("jsonwebtoken");
+const tk_conf = require("../config/token_config");
+
+const authChecker = async (req, res) => {
+  res.status(200).json({
+    type: "success",
+    message: "Authorized",
+  });
+};
 
 const createUser = async (req, res) => {
   const data = req.body;
@@ -29,7 +38,7 @@ const createUser = async (req, res) => {
   if (!!checkUser)
     return res.json({ type: "error", message: "Account already existed" });
 
-  const hashPw = argon2.hash(data.password);
+  const hashPw = await argon2.hash(data.password);
 
   await userModel.create({
     email: data.email,
@@ -51,6 +60,7 @@ const listUsers = async (req, res) => {
     message: allUsers,
   });
 };
+
 const fetchUser = async (req, res) => {
   const userId = req.params.userId;
 
@@ -143,6 +153,14 @@ const signIn = async (req, res) => {
       message: "Incorrect password",
     });
 
+  const token = jwt.sign(
+    { userId: checkUser.id },
+    tk_conf.jwt.secret,
+    tk_conf.jwt.options
+  );
+
+  res.cookie("__authTk", token);
+
   return res.json({
     type: "success",
     message: "Successfully login",
@@ -165,4 +183,5 @@ module.exports = {
   deleteUser,
   signIn,
   signOut,
+  authChecker,
 };
