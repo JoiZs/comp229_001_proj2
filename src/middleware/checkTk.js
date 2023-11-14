@@ -6,7 +6,7 @@ const config = require("../config/token_config");
 function checkAuth(req, res, next) {
   try {
     //token
-    const token = req.headers["authorization"];
+    const token = req.cookies["__authTk"];
 
     if (!isJwt(token)) {
       return res.json({
