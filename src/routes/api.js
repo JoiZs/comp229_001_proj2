@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { getAllMsgController } = require("../controllers/conv-controller");
 const {
   createUser,
   deleteUser,
@@ -13,10 +14,11 @@ const checkAuth = require("../middleware/checkTk");
 router.post("/users", createUser);
 
 // List all users from the database
-router.get("/users", checkAuth, listUsers);
+router.get("/users", listUsers);
 
 // GEttting one user from database using UserID
 router.get("/users/:userId", checkAuth, fetchUser);
+router.post("/msg", getAllMsgController);
 
 // Updating one user from database using UserID
 router.put("/users/:userId", checkAuth, updateUser);

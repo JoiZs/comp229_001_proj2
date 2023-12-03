@@ -11,9 +11,12 @@ const tk_conf = require("../config/token_config");
 // Else Message(Unathorized)
 
 const authChecker = async (req, res) => {
+  const token = req.cookies["__authTk"];
+  const pl = jwt.verify(token, tk_conf.jwt.secret);
+
   res.status(200).json({
     type: "success",
-    message: "Authorized",
+    message: pl.userId,
   });
 };
 
@@ -39,7 +42,7 @@ const createUser = async (req, res) => {
   // if not create that user
   const checkUser = await userModel.findOne(
     {
-      $or: [{ email: data.email }, { name: data.name }],
+      email: data.email,
     },
     "-password"
   );
@@ -66,7 +69,7 @@ const createUser = async (req, res) => {
 
 const listUsers = async (req, res) => {
   // API for listing all users
-  const allUsers = await userModel.find("-password");
+  const allUsers = await userModel.find({}, "-password");
 
   return res.json({
     type: "success",
@@ -149,9 +152,17 @@ const deleteUser = async (req, res) => {
 
 const signIn = async (req, res) => {
   const data = req.body;
+
   // {email, password} => data (from users' side)
 
   // check 2 -> Invalid email, Strong password
+  if (!data.email && !data.password) {
+    return res.json({
+      type: "error",
+      message: "Invalid inputs.",
+    });
+  }
+
   if (!isEmail(data.email))
     return res.json({
       type: "error",
@@ -191,7 +202,10 @@ const signIn = async (req, res) => {
 
   // After assiging tk, send token as a cookie to the client
   // Client will store that cookie in their side
-  res.cookie("__authTk", token);
+  res.cookie("__authTk", token, {
+    maxAge: 1000 * 60 * 60,
+    httpOnly: true,
+  });
 
   // Send Success msg
   return res.json({
@@ -201,7 +215,7 @@ const signIn = async (req, res) => {
 };
 const signOut = async (req, res) => {
   //  delete token from client... => Delete token on clients' side
-
+  res.clearCookie("__authTk");
   return res.json({
     type: "success",
     message: "Successfully logout",
