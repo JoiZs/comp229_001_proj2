@@ -6,6 +6,7 @@ const api_router = require("./src/routes/api");
 const auth_router = require("./src/routes/auth");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+
 const { createServer } = require("http");
 const { Server: ioServer } = require("socket.io");
 const {
@@ -17,7 +18,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new ioServer(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_HOST || "http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
@@ -27,7 +28,12 @@ const PORT = process.env.PORT || 4444;
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.CLIENT_HOST || "http://localhost:5173",
+  })
+);
 
 app.get("/", (req, res) => {
   res.json({ message: "welcome to the dressshop application" });
